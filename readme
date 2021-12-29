@@ -1,0 +1,16 @@
+sudo perf record -F 99 -p 3887 -g -- sleep 30
+
+perf record 表示采集系统事件, 没有使用 -e 指定采集事件, 则默认采集 cycles(即 CPU clock 周期),
+-F 99 表示每秒 99 次, -a 表示所有进程 / -p 13204 是进程号, 即对哪个进程进行分析, -g 表示记录调用栈, sleep 30 则是持续 30 秒.
+
+# 生成折叠后的调用栈
+sudo perf script -i perf.data &> perf.unfold
+
+# 生成火焰图
+./stackcollapse-perf.pl perf.unfold &> perf.folded
+
+# 生成 svg 图
+./flamegraph.pl perf.folded > perf.svg
+
+# 简化为一条命令
+perf script | FlameGraph/stackcollapse-perf.pl | FlameGraph/flamegraph.pl > process.svg
